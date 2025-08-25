@@ -1,0 +1,130 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMRsLFl9u82wDacVc/D/jIl",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/daivisha/ML/blob/main/Spam%20Mail%20Classifier\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ZLbr6Nlc6L2i",
+        "outputId": "5b924328-5e42-4727-eec5-b03f2f89e774"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Accuracy: 0.5\n",
+            "\n",
+            "Classification Report:\n",
+            "               precision    recall  f1-score   support\n",
+            "\n",
+            "           0       0.50      1.00      0.67         1\n",
+            "           1       0.00      0.00      0.00         1\n",
+            "\n",
+            "    accuracy                           0.50         2\n",
+            "   macro avg       0.25      0.50      0.33         2\n",
+            "weighted avg       0.25      0.50      0.33         2\n",
+            "\n",
+            "Message: Free entry in a contest!!! --> HAM\n",
+            "Message: Hey, are you coming to class today? --> HAM\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.\n",
+            "  _warn_prf(average, modifier, f\"{metric.capitalize()} is\", len(result))\n",
+            "/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.\n",
+            "  _warn_prf(average, modifier, f\"{metric.capitalize()} is\", len(result))\n",
+            "/usr/local/lib/python3.12/dist-packages/sklearn/metrics/_classification.py:1565: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.\n",
+            "  _warn_prf(average, modifier, f\"{metric.capitalize()} is\", len(result))\n"
+          ]
+        }
+      ],
+      "source": [
+        "import pandas as pd\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+        "from sklearn.naive_bayes import MultinomialNB\n",
+        "from sklearn.metrics import accuracy_score, classification_report\n",
+        "\n",
+        "# Load dataset (SMS Spam Collection dataset from UCI/Kaggle)\n",
+        "# You can download from: https://archive.ics.uci.edu/ml/datasets/sms+spam+collection\n",
+        "# For demo, we'll create a small sample dataset\n",
+        "data = {\n",
+        "    \"label\": [\"ham\", \"spam\", \"ham\", \"spam\", \"ham\"],\n",
+        "    \"message\": [\n",
+        "        \"Hello, how are you?\",\n",
+        "        \"Win money now!!! Click here\",\n",
+        "        \"Are we meeting tomorrow?\",\n",
+        "        \"Congratulations, you have won a free prize!\",\n",
+        "        \"Let's have lunch today\"\n",
+        "    ]\n",
+        "}\n",
+        "\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "# Convert labels into numbers (ham=0, spam=1)\n",
+        "df[\"label_num\"] = df.label.map({\"ham\":0, \"spam\":1})\n",
+        "\n",
+        "# Split data\n",
+        "X_train, X_test, y_train, y_test = train_test_split(\n",
+        "    df[\"message\"], df[\"label_num\"], test_size=0.3, random_state=42\n",
+        ")\n",
+        "\n",
+        "# Convert text into numerical features\n",
+        "vectorizer = TfidfVectorizer()\n",
+        "X_train_vec = vectorizer.fit_transform(X_train)\n",
+        "X_test_vec = vectorizer.transform(X_test)\n",
+        "\n",
+        "# Train Naive Bayes model\n",
+        "model = MultinomialNB()\n",
+        "model.fit(X_train_vec, y_train)\n",
+        "\n",
+        "# Predict\n",
+        "y_pred = model.predict(X_test_vec)\n",
+        "\n",
+        "# Evaluate\n",
+        "print(\"Accuracy:\", accuracy_score(y_test, y_pred))\n",
+        "print(\"\\nClassification Report:\\n\", classification_report(y_test, y_pred))\n",
+        "\n",
+        "# Try with new messages\n",
+        "test_messages = [\"Free entry in a contest!!!\", \"Hey, are you coming to class today?\"]\n",
+        "test_vec = vectorizer.transform(test_messages)\n",
+        "predictions = model.predict(test_vec)\n",
+        "\n",
+        "for msg, pred in zip(test_messages, predictions):\n",
+        "    print(f\"Message: {msg} --> {'SPAM' if pred==1 else 'HAM'}\")\n"
+      ]
+    }
+  ]
+}
